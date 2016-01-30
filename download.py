@@ -13,6 +13,7 @@ done = False
 
 def progress_print(filename, size_to_dl):
     global done
+    this_file_start = time.time()
     while not done:
         percent = (os.path.getsize(filename)/float(size_to_dl))
         rows, columns = os.popen('stty size', 'r').read().split()
@@ -20,11 +21,13 @@ def progress_print(filename, size_to_dl):
         pleft = int(percent*(barLengthMax))
         pright = barLengthMax-pleft
         #print(pleft,pright, barLengthMax)
-        sys.stdout.write("\r{0}% [ {1}>{2} ]".format('%.2f'%(percent*100),'='*pleft, " "*pright))
+        sys.stdout.write("\r{0}% [ {1}>{2} ] {3} seconds elapsed".format('%.2f'%(percent*100),'='*pleft, " "*pright, '%.2f'%(time.time()-this_file_start)))
         sys.stdout.flush()
-    print("Downloading {0} finished...".format(filename))
+    sys.stdout.write("\r{0}% [ {1}{2} ] {3} seconds elapsed".format('%.2f'%(100),'='*(pleft+pright), " "*0, '%.2f'%(time.time()-this_file_start)))
+    print("\nDownloading {0} finished...".format(filename))
 
 def download(urls, extract_tar=True):
+    global done
     for url in urls:
         done = False
         print("Downloading {0}".format(url))
@@ -64,6 +67,8 @@ def download(urls, extract_tar=True):
                     print("Extraction done...")
 
 if __name__ == "__main__":
+    print("Started download-script")
+    dl_time = time.time()
     urls = [
         'ftp://ftp.ncbi.nlm.nih.gov/pub/pmc/articles.txt.0-9A-B.tar.gz',
         'ftp://ftp.ncbi.nlm.nih.gov/pub/pmc/articles.txt.C-H.tar.gz',
@@ -71,4 +76,5 @@ if __name__ == "__main__":
         'ftp://ftp.ncbi.nlm.nih.gov/pub/pmc/articles.txt.O-Z.tar.gz'
     ]
 
-    download(urls)
+    download(urls, False)
+    print("Done in {0} seconds...".format('%.2f')%(time.time()-dl_time))
